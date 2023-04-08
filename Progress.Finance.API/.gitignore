@@ -1,0 +1,34 @@
+# Visual Studio files
+*.suo
+*.user
+*.ncb
+*.aps
+*.pdb
+*.obj
+*.exe
+*.dll
+*.res
+*.pch
+*.idb
+*.manifest
+*_i.c
+*_p.c
+*.ilk
+*.log
+*.tlog
+*.lastbuildlog
+*.ipch
+*.bak
+*.cache
+
+# ReSharper files
+_ReSharper.*
+*.ReSharper*
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+[Bb]in/
+[Oo]bj/
