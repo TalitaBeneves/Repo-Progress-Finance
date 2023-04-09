@@ -14,7 +14,7 @@ namespace API.Model
         public int ValorInicial { get; set; }
         public int ValorMeta { get; set; }
         public DateTime DataCadastro { get; set; }
-        public DateTime DataAlvo { get; set; }
+        public DateTime? DataAlvo { get; set; }
         public decimal Porcentagem { get; set; }
         public Status Status { get; set; }
 
