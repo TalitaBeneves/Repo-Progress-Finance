@@ -95,11 +95,11 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
         public async Task<ActionResult> editar([FromBody] Metas p)
         {
             var json = JsonConvert.SerializeObject(p, Formatting.Indented,
-          new JsonSerializerSettings
-          {
-              ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-              ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
-          });
+              new JsonSerializerSettings
+              {
+                  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                  ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+              });
 
             if (p.Porcentagem == 100)
             {
@@ -210,6 +210,14 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
 
         }
 
+        [HttpPut("Metas/Items")]
+        public async Task<ActionResult> editarItems([FromBody] Items i)
+        {
+            _dc.items.Update(i);
+            await _dc.SaveChangesAsync();
+
+            return Ok(i);
+        }
 
         [HttpDelete("Metas/Items/{id}")]
         public async Task<ActionResult> deleteItems(int id)

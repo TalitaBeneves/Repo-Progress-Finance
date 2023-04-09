@@ -72,8 +72,9 @@ namespace criandoAPI
             }
 
             app.UseHttpsRedirection();
-
+            app.UseHttpMethodOverride();
             app.UseRouting();
+
 
             app.UseAuthorization();
 
