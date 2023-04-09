@@ -28,6 +28,7 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
         [HttpPost("Metas")]
         public async Task<ActionResult> cadastrar([FromBody] Metas p)
         {
+
             _dc.progress.Add(p);
             await _dc.SaveChangesAsync();
 
@@ -35,16 +36,10 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
             return Created("Criado", p);
         }
 
-
         [HttpGet("Metas")]
         public async Task<ActionResult> listar()
         {
             var list = await _dc.progress.Include(pf => pf.Items).ToListAsync();
-
-            if (list == null)
-            {
-                return NotFound();
-            }
 
             var json = JsonConvert.SerializeObject(list, Formatting.Indented,
               new JsonSerializerSettings
@@ -53,8 +48,28 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
                   ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
               });
 
-            return Ok(json);
+
+            if (list == null)
+            {
+                return NotFound();
+            }
+
+
+            foreach (var items in list)
+            {
+                if (items.Porcentagem >= 100)
+                {
+                    items.Status = Status.CONCLUIDA;
+                }
+                else
+                {
+                    items.Status = Status.ANDAMENTO;
+
+                }
+            }
+            return Ok(list);
         }
+
 
         [HttpGet("Metas/{id}")]
         public ActionResult<Metas> GetById(int id)
@@ -77,39 +92,61 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
 
 
         [HttpPut("Metas")]
-        public async Task<ActionResult> editar([FromBody] Metas progress)
+        public async Task<ActionResult> editar([FromBody] Metas p)
         {
-            foreach (var item in progress.Items)
+            var json = JsonConvert.SerializeObject(p, Formatting.Indented,
+          new JsonSerializerSettings
+          {
+              ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+              ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+          });
+
+            if (p.Porcentagem == 100)
             {
-                var itemAtual = progress.Items.FirstOrDefault(i => i.Id == item.Id);
+                p.Status = Status.CONCLUIDA;
 
-                if (progress.Id != itemAtual.IdMeta)
-                {
-                    throw new InvalidOperationException("O IdMeta precisa se igual ao Id da Meta");
+                _dc.progress.Update(p);
+                await _dc.SaveChangesAsync();
 
-                    return BadRequest();
-                }
+                return Ok(json);
+            }
+            else
+            {
+                p.Status = Status.ANDAMENTO;
+            }
 
-                if (itemAtual == null)
+            if (p.Items != null)
+            {
+                foreach (var item in p.Items)
                 {
-                    progress.Items.Add(item);
-                }
-                else
-                {
-                    itemAtual.ValorDepositado = item.ValorDepositado;
-                    itemAtual.DataDeposito = item.DataDeposito;
-                    itemAtual.IdMeta = item.IdMeta;
+                    var itemAtual = p.Items.FirstOrDefault(i => i.Id == item.Id);
+
+                    if (p.Id != itemAtual.IdMeta)
+                    {
+                        throw new InvalidOperationException("O IdMeta precisa se igual ao Id da Meta");
+
+                        return BadRequest();
+                    }
+
+                    if (itemAtual == null)
+                    {
+                        p.Items.Add(item);
+                    }
+                    else
+                    {
+                        itemAtual.ValorDepositado = item.ValorDepositado;
+                        itemAtual.DataDeposito = item.DataDeposito;
+                        itemAtual.IdMeta = item.IdMeta;
+                    }
                 }
             }
-            _dc.progress.Update(progress);
+
+
+            _dc.progress.Update(p);
             await _dc.SaveChangesAsync();
 
-            var json = JsonConvert.SerializeObject(progress, Formatting.Indented,
-             new JsonSerializerSettings
-             {
-                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                 ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
-             });
+
+
 
             return Ok(json);
         }
