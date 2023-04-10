@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
 {
     [Controller]
-    [Route("controler")]
+    [Route("controller")]
 
     public class MetasController : ControllerBase
     {
@@ -41,19 +41,25 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
         {
             var list = await _dc.progress.Include(pf => pf.Items).ToListAsync();
 
-            var json = JsonConvert.SerializeObject(list, Formatting.Indented,
-              new JsonSerializerSettings
-              {
-                  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                  ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
-              });
-
-
             if (list == null)
             {
                 return NotFound();
             }
 
+
+            //AQUI ESTOU SOMANDO O VALOR INICIAL COM OS VALORES DEPOSITADOS 😁
+            foreach (var meta in list)
+            {
+                var total = meta.ValorInicial;
+                foreach (var item in meta.Items)
+                {
+                    total += item.ValorDepositado;
+                }
+                meta.ValorTotal = total;
+                var formula = (total * 1.0M / meta.ValorMeta) * 100M;
+
+                meta.Porcentagem = decimal.Parse(formula.ToString("N2")); ;
+            }
 
             foreach (var items in list)
             {
@@ -67,7 +73,15 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
 
                 }
             }
-            return Ok(list);
+
+            var json = JsonConvert.SerializeObject(list, Formatting.Indented,
+              new JsonSerializerSettings
+              {
+                  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                  ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+              });
+
+            return Ok(json);
         }
 
 
@@ -75,17 +89,29 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
         public ActionResult<Metas> GetById(int id)
         {
             var listById = _dc.progress.Include(pf => pf.Items).FirstOrDefault(pf => pf.Id == id);
+
             if (listById == null)
             {
                 return NotFound();
             }
 
+            var total = listById.ValorInicial;
+            foreach (var item in listById.Items)
+            {
+                total += item.ValorDepositado;
+            }
+
+            listById.ValorTotal = total;
+            var formula = (total * 1.0M / listById.ValorMeta) * 100M;
+
+            listById.Porcentagem = decimal.Parse(formula.ToString("N2"));
+
             var json = JsonConvert.SerializeObject(listById, Formatting.Indented,
-              new JsonSerializerSettings
-              {
-                  ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                  ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
-              });
+            new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver()
+            });
 
             return Ok(json);
         }
@@ -186,7 +212,10 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
         {
 
             var list = await _dc.items.ToListAsync();
-
+            if (list == null)
+            {
+                return NotFound();
+            }
 
             return Ok(list);
         }
@@ -213,6 +242,7 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
         [HttpPut("Metas/Items")]
         public async Task<ActionResult> editarItems([FromBody] Items i)
         {
+            
             _dc.items.Update(i);
             await _dc.SaveChangesAsync();
 
