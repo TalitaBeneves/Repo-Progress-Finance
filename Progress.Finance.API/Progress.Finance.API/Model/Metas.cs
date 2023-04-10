@@ -12,6 +12,7 @@ namespace API.Model
         public int Id { get; set; }
         public string NomeMeta { get; set; }
         public int ValorInicial { get; set; }
+        public int ValorTotal { get; set; }
         public int ValorMeta { get; set; }
         public DateTime DataCadastro { get; set; }
         public DateTime? DataAlvo { get; set; }
