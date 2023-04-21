@@ -9,6 +9,7 @@ using API.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Progress.Finance.API.Model;
 
 namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
 {
@@ -242,7 +243,7 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
         [HttpPut("Metas/Items")]
         public async Task<ActionResult> editarItems([FromBody] Items i)
         {
-            
+
             _dc.items.Update(i);
             await _dc.SaveChangesAsync();
 
@@ -267,6 +268,4 @@ namespace Progress.Finance.API.Controllers //RESPONSAVEL PELAS ROTAS!
             }
         }
     }
-
-
 }

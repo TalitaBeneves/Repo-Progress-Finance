@@ -15,6 +15,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
+using System.Text.Json;
 
 namespace criandoAPI
 {
@@ -31,7 +34,14 @@ namespace criandoAPI
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
+            services.AddControllers()
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    });
+
+
+
 
             //INICIO DE CONEXÃO COM O BANCO DE DADOS
             string stringDeConexao = Configuration.GetConnectionString("conexaoMySQL");
