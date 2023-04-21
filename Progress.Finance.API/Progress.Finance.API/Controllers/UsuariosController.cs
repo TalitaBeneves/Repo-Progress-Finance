@@ -36,23 +36,81 @@ namespace Progress.Finance.API.Controllers
             }
         }
 
-        [HttpPost("Logar")]
-        public async Task<ActionResult> Logar([FromBody] Usuarios user)
+        [HttpPost("Login")]
+        public async Task<ActionResult> Login([FromBody] Usuarios user)
         {
             try
             {
+
                 var usuario = await _dc.usuarios.FirstOrDefaultAsync(u => u.Email == user.Email && u.Senha == user.Senha);
+                if (usuario == null) throw new InvalidOperationException("Usuário não encontrado");
 
-
-                _dc.usuarios.Find(user);
-
-                return Ok("Usuário logado com sucesso");
+                return Ok(user);
 
             }
             catch (Exception ex)
             {
                 return BadRequest($"Erro ao fazer login: {ex.Message}");
             }
+        }
+
+        [HttpPut("EditarUsuario")]
+        public async Task<ActionResult> EditarUsuario([FromBody] Usuarios user)
+        {
+            try
+            {
+                var usuario = await _dc.usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id_Usuario == user.Id_Usuario);
+                if (usuario == null) throw new InvalidOperationException("Id não encontrado");
+
+                if (usuario.ImagemUrl != user.ImagemUrl)
+                {
+                    //deletarimg
+                    //adicionar img
+
+                }
+                var editarUser = new Usuarios
+                {
+                    Email = user.Email,
+                    Id_Usuario = user.Id_Usuario,
+                    Nome = user.Nome,
+                    Senha = user.Senha
+                };
+
+                _dc.usuarios.Update(editarUser);
+                await _dc.SaveChangesAsync();
+
+                return Ok(editarUser);
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao atualizar usuário: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("DeletarUsuario/{id}")]
+        public async Task<ActionResult> DeletarUsuario(int id)
+        {
+            try
+            {
+                var usuario = await _dc.usuarios.FindAsync(id);
+
+                _dc.usuarios.Remove(usuario);
+                await _dc.SaveChangesAsync();
+
+                return Ok("Usuário deletado com sucesso");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao atualizar usuário: {ex.Message}");
+            }
+        }
+
+        [NonAction]
+        public async Task<ActionResult> atualizarImagem([FromBody] Usuarios user)
+        {
+            return null;
         }
     }
 }
