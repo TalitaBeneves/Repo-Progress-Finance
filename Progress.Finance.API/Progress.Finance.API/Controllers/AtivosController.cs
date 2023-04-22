@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Progress.Finance.API.Model;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Progress.Finance.API.Controllers
@@ -28,6 +29,20 @@ namespace Progress.Finance.API.Controllers
 
             return Ok(listAtivos);
         }
+
+
+
+        [HttpGet("{id}")]
+        public ActionResult<Ativos> ListarAtivoById(int id)
+        {
+
+            var listById = _dc.ativos.FirstOrDefault(pf => pf.IdUsuario == id);
+
+            if (listById == null) throw new InvalidOperationException("Metas não encontradas");
+
+            return Ok(listById);
+        }
+
 
         [HttpPost]
         public async Task<ActionResult> CadastrarAtivo([FromBody] Ativos ativo)

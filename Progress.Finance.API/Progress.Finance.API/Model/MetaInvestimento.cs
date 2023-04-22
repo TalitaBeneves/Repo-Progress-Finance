@@ -5,11 +5,11 @@ namespace Progress.Finance.API.Model
     public class MetaInvestimento
     {
         [Key]
-        public int Id_Meta { get; set; }
-        public int Id_Usuario { get; set; }
+        public int IdMeta { get; set; }
+        public int IdUsuario { get; set; }
         public string Nome { get; set; }
-        public int Acoes { get; set; }
-        public int Fiis { get; set; }
-        public int Renda_Fixa { get; set; }
+        public decimal Acoes { get; set; }
+        public decimal Fiis { get; set; }
+        public decimal RendaFixa { get; set; }
     }
 }

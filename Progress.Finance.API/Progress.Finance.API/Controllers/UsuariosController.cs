@@ -45,7 +45,15 @@ namespace Progress.Finance.API.Controllers
                 var usuario = await _dc.usuarios.FirstOrDefaultAsync(u => u.Email == user.Email && u.Senha == user.Senha);
                 if (usuario == null) throw new InvalidOperationException("Usuário não encontrado");
 
-                return Ok(user);
+                var response = new Usuarios
+                {
+                    Email = user.Email,
+                    IdUsuario = usuario.IdUsuario,
+                    ImagemUrl = user.ImagemUrl,
+                    Nome = user.Nome
+                };
+
+                return Ok(response);
 
             }
             catch (Exception ex)
@@ -59,7 +67,7 @@ namespace Progress.Finance.API.Controllers
         {
             try
             {
-                var usuario = await _dc.usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.Id_Usuario == user.Id_Usuario);
+                var usuario = await _dc.usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.IdUsuario == user.IdUsuario);
                 if (usuario == null) throw new InvalidOperationException("Id não encontrado");
 
                 if (usuario.ImagemUrl != user.ImagemUrl)
@@ -71,7 +79,7 @@ namespace Progress.Finance.API.Controllers
                 var editarUser = new Usuarios
                 {
                     Email = user.Email,
-                    Id_Usuario = user.Id_Usuario,
+                    IdUsuario = user.IdUsuario,
                     Nome = user.Nome,
                     Senha = user.Senha
                 };
