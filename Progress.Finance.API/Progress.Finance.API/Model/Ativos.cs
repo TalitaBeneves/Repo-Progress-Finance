@@ -8,11 +8,11 @@ namespace Progress.Finance.API.Model
         [Key]
         public int Id_Ativo { get; set; }
         public int Id_Usuario { get; set; }
-        public int Id_Metas { get; set; }
+        public int Id_Meta { get; set; }
         public string Nome { get; set; }
         public int Nota { get; set; }
-        public decimal RecomendacaoPorcentagem { get; set; }
-        public decimal SugestaoInvestimento { get; set; }
-        public TipoAtivo TipoAtivo { get; set; }
+        public decimal Recomendacao_Porcentagem { get; set; }
+        public decimal Sugestao_Investimento { get; set; }
+        public TipoAtivo Tipo { get; set; }
     }
 }
