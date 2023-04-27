@@ -7,8 +7,8 @@
     }
 
     public enum TipoAtivo
-    {
-        ACOES = 0,
+    { 
+        ACOES = 3,
         FUNDOS_IMOBILIARIOS = 1,
         RENDA_FIXA = 2
     }

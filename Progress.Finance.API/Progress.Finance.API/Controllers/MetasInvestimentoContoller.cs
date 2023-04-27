@@ -20,41 +20,48 @@ namespace Progress.Finance.API.Controllers
             _dc = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult> ListarMetaInvestimento(MetaInvestimento meta)
+        [HttpGet("{idUsuario}")]
+        public async Task<ActionResult> ListarMetaInvestimento(int idUsuario)
         {
-            var listMeta = await _dc.metaInvestimento.ToListAsync();
+            var listMeta = await _dc.metaInvestimento.Where(id => id.IdUsuario == idUsuario).ToListAsync();
 
-            if (meta == null) throw new InvalidOperationException("Metas não encontradas");
+            if (listMeta == null) return BadRequest("Meta não encontrada");
 
             return Ok(listMeta);
         }
 
-        [HttpGet("{id}")]
-        public ActionResult<MetaInvestimento> ListarMetaInvestimentoById(int id)
+        [HttpPost("CadastrarOuAtualizarMetaInvestimento")]
+        public async Task<ActionResult> CadastrarOuAtualizarMetaInvestimento([FromBody] MetaInvestimento meta)
         {
+            if (meta == null) return BadRequest("meta null");
 
-            var listById = _dc.metaInvestimento.FirstOrDefault(pf => pf.IdUsuario == id);
+            var verificaMeta = await _dc.metaInvestimento.Where(id => id.IdUsuario == meta.IdUsuario).FirstOrDefaultAsync();
 
-            if (listById == null) throw new InvalidOperationException("Metas não encontradas");
-
-            return Ok(listById);
-        }
-
-
-        [HttpPost]
-        public async Task<ActionResult> CadastrarMetaInvestimento([FromBody] MetaInvestimento meta)
-        {
-            if (meta == null)
+            if (verificaMeta == null)
             {
-                return BadRequest();
+                _dc.metaInvestimento.Add(meta);
+                await _dc.SaveChangesAsync();
+
+                var userMeta = new UsuarioMetaInvestimento { IdUsuario = meta.IdUsuario, IdMeta = meta.IdMeta };
+
+                _dc.usuarioMetaInvestimento.Add(userMeta);
+                await _dc.SaveChangesAsync();
+
+
+                return CreatedAtAction(nameof(ListarMetaInvestimento), new { id = meta.IdMeta }, meta);
             }
+            else
+            {
+                verificaMeta.Acoes = meta.Acoes;
+                verificaMeta.RendaFixa = meta.RendaFixa;
+                verificaMeta.Nome = meta.Nome;
 
-            _dc.metaInvestimento.Add(meta);
-            await _dc.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(ListarMetaInvestimento), new { id = meta.IdMeta }, meta);
+                _dc.metaInvestimento.Update(verificaMeta);
+                await _dc.SaveChangesAsync();
+
+                return Ok(meta);
+            }
         }
     }
-
 }

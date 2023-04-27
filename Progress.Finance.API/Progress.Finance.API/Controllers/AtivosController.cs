@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Progress.Finance.API.Model;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Progress.Finance.API.Controllers
@@ -12,50 +13,39 @@ namespace Progress.Finance.API.Controllers
     [Route("[Controller]")]
     public class AtivosController : ControllerBase
     {
-        private DataContext _dc;
+        private readonly DataContext _dc;
+        private static readonly HttpClient client = new HttpClient();
 
         public AtivosController(DataContext context)
         {
             _dc = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult> LitarAtivos(Ativos ativo)
+        [HttpGet("LitarAtivosById/{idUsuario}")]
+        public async Task<ActionResult> LitarAtivosById(int idUsuario)
         {
 
-            var listAtivos = await _dc.ativos.ToListAsync();
+            var listAtivos = await _dc.ativos.Where(id => id.IdUsuario == idUsuario).ToListAsync();
 
-            if (listAtivos == null) return NotFound();
+            if (listAtivos == null) return BadRequest("Ativos não encontrados");
 
             return Ok(listAtivos);
-        }
-
-
-
-        [HttpGet("{id}")]
-        public ActionResult<Ativos> ListarAtivoById(int id)
-        {
-
-            var listById = _dc.ativos.FirstOrDefault(pf => pf.IdUsuario == id);
-
-            if (listById == null) throw new InvalidOperationException("Metas não encontradas");
-
-            return Ok(listById);
         }
 
 
         [HttpPost]
         public async Task<ActionResult> CadastrarAtivo([FromBody] Ativos ativo)
         {
-            if (ativo == null) return NotFound();
+            if (ativo == null) return BadRequest("Ativo está null");
 
 
             _dc.ativos.Add(ativo);
-
             await _dc.SaveChangesAsync();
 
             return Created("Ativo criado com sucesso!", ativo); ;
         }
+
+
 
     }
 }

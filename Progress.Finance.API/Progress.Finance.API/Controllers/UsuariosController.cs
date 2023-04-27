@@ -20,6 +20,17 @@ namespace Progress.Finance.API.Controllers
             _dc = context;
         }
 
+        [HttpGet("buscarMetaInvestimentoPeloId/{idUsuario}")]
+        public async Task<ActionResult> buscarMetaPeloId(int idUsuario)
+        {
+
+            if (idUsuario == null) return BadRequest($"IdUsuario não pode ser null");
+
+            var usuario = await _dc.usuarioMetaInvestimento.FindAsync(idUsuario);
+            return Ok(usuario);
+
+        }
+
         [HttpPost("cadastrarUsuario")]
         public async Task<ActionResult> CadastrarUsuario([FromBody] Usuarios user)
         {

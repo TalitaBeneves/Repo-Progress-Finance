@@ -11,4 +11,19 @@ namespace Progress.Finance.API.Model
         public string Email { get; set; }
         public string ImagemUrl { get; set; }
     }
+
+    public class UsuarioAtivos
+    {
+        [Key]
+        public int IdUsuario { get; set; }
+        public int IdAtivo { get; set; }
+        public decimal ValoTotalInvestido { get; set; }
+    }
+    public class UsuarioMetaInvestimento
+    {
+        [Key]
+        public int IdUsuario { get; set; }
+        public int IdMeta { get; set; }
+
+    }
 }
