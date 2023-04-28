@@ -13,6 +13,8 @@ namespace Progress.Finance.API.Model
         public int Nota { get; set; }
         public decimal RecomendacaoPorcentagem { get; set; }
         public decimal SugestaoInvestimento { get; set; }
+        public decimal ValorRecomendado { get; set; }
+        public int ValorDoAtivo { get; set; }
         public TipoAtivo TipoAtivo { get; set; }
     }
 }
