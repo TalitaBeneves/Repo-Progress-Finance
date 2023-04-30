@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Progress.Finance.API.Model;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,54 +34,88 @@ namespace Progress.Finance.API.Controllers
             var porcentagemFIIs = metaInvestimento.Fiis;
             var porcentagemRendaFixa = metaInvestimento.RendaFixa;
 
-            var valorTotalAcoes = valorInvestimento * porcentagemAcoes / 100;
-            var valorTotalFIIs = valorInvestimento * porcentagemFIIs / 100;
-            var valorTotalRendaFixa = valorInvestimento * porcentagemRendaFixa / 100;
+            var totalPorcentagem = porcentagemAcoes + porcentagemFIIs + porcentagemRendaFixa;
 
-            var valorTotalRecomendado = valorTotalAcoes + valorTotalFIIs + valorTotalRendaFixa;
-            var totalPontos = listAtivos.Sum(item => item.Nota);
+            if (totalPorcentagem != 100)
+                return BadRequest("A soma das porcentagens não é igual a 100%");
+
+            var valorAcoes = Convert.ToDouble(porcentagemAcoes / totalPorcentagem) * valorInvestimento;
+            var valorFIIs = Convert.ToDouble(porcentagemFIIs / totalPorcentagem) * valorInvestimento;
+            var valorRendaFixa = Convert.ToDouble(porcentagemRendaFixa / totalPorcentagem) * valorInvestimento;
+
             decimal valorTotalDistribuido = 0;
 
+            var newListAtivos = new List<Ativos>();
             foreach (var item in listAtivos)
             {
-                var porcentagem = item != null ? item.RecomendacaoPorcentagem : 0;
-                decimal valorRecomendado;
-                decimal valorRecomendadoAtivo;
+                var valorAtivo = Convert.ToDouble(item.ValorAtualDoAtivo);
 
-                switch (item.TipoAtivo)
+                if (item.TipoAtivo == TipoAtivo.ACOES)
                 {
-                    case TipoAtivo.ACOES:
-                        valorRecomendado = porcentagem / 100M * valorTotalAcoes;
-                        break;
-                    case TipoAtivo.FUNDOS_IMOBILIARIOS:
-                        valorRecomendado = porcentagem / 100M * valorTotalFIIs;
-                        break;
-                    case TipoAtivo.RENDA_FIXA:
-                        valorRecomendado = porcentagem / 100M * valorTotalRendaFixa;
-                        break;
-                    default:
-                        valorRecomendado = 0;
-                        break;
+                    valorAtivo = valorAcoes;
+                }
+                else if (item.TipoAtivo == TipoAtivo.FUNDOS_IMOBILIARIOS)
+                {
+                    valorAtivo = valorFIIs;
+                }
+                else if (item.TipoAtivo == TipoAtivo.RENDA_FIXA)
+                {
+                    valorAtivo = valorRendaFixa;
                 }
 
-                var quantidadeUnidadesRecomendadas = valorRecomendado / item.ValorDoAtivo;
 
-                var quantidadeUnidadesArredondada = (int)Math.Round(quantidadeUnidadesRecomendadas, MidpointRounding.AwayFromZero);
-                valorRecomendadoAtivo = quantidadeUnidadesArredondada * item.ValorDoAtivo;
+                var valorPorNota = valorAtivo / item.Nota;
+                var quantidade = Math.Floor(valorAtivo / item.ValorAtualDoAtivo);
 
-                item.RecomendacaoPorcentagem = porcentagem;
-                item.ValorRecomendado = valorRecomendadoAtivo;
 
-                valorTotalDistribuido += valorRecomendadoAtivo;
+                item.ValorTotalInvestido = Convert.ToInt32(valorPorNota);
+                item.QuantidadeDeAtivo = Convert.ToInt32(quantidade);
+
+                valorTotalDistribuido += Convert.ToDecimal(valorPorNota);
+
+                newListAtivos.Add(item);
             }
 
-            if (valorTotalDistribuido > valorInvestimento)
+            if (valorTotalDistribuido < valorInvestimento)
             {
-                return BadRequest("Valor total recomendado é maior que o valor investido pelo usuário");
+                var valorRestante = valorInvestimento - valorTotalDistribuido;
+
+                // add a diferença proporcionalmente aos ativos já alocados
+                if (valorTotalDistribuido > 0)
+                {
+                    foreach (var item in newListAtivos)
+                    {
+                        var porcentagemDoValorTotal = (decimal)item.ValorTotalInvestido / (decimal)valorTotalDistribuido;
+                        item.ValorTotalInvestido += Convert.ToInt32(valorRestante * porcentagemDoValorTotal);
+                    }
+                }
+                else // não há nenhum ativo alocado, adiciona a diferença em ordem decrescente de recomendação
+                {
+                    var ativosOrdenadosPorRecomendacao = listAtivos.OrderByDescending(item => item.Nota);
+
+                    foreach (var item in ativosOrdenadosPorRecomendacao)
+                    {
+                        if (valorRestante <= 0)
+                            break;
+
+                        if (valorRestante >= item.SugestaoInvestimento)
+                        {
+                            item.ValorTotalInvestido += Convert.ToInt32(item.SugestaoInvestimento);
+                            valorRestante -= item.SugestaoInvestimento;
+                        }
+                        else
+                        {
+                            var quantidadeRestante = Convert.ToInt32(valorRestante / item.ValorAtualDoAtivo);
+                            item.ValorTotalInvestido += quantidadeRestante * item.ValorAtualDoAtivo;
+                            valorRestante = 0;
+                        }
+                    }
+                }
             }
 
             await _dc.SaveChangesAsync();
-            return Ok(listAtivos);
+            return Ok(newListAtivos);
+
         }
 
     }

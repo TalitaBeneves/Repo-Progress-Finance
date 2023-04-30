@@ -34,6 +34,10 @@ namespace Progress.Finance.API.Controllers
         public async Task<ActionResult> CadastrarOuAtualizarMetaInvestimento([FromBody] MetaInvestimento meta)
         {
             if (meta == null) return BadRequest("meta null");
+            var totalPorcentagem = meta.Acoes + meta.Fiis+ meta.RendaFixa;
+
+            if (totalPorcentagem > 100) return BadRequest("A soma das porcentagens é maior que 100%");
+
 
             var verificaMeta = await _dc.metaInvestimento.Where(id => id.IdUsuario == meta.IdUsuario).FirstOrDefaultAsync();
 
