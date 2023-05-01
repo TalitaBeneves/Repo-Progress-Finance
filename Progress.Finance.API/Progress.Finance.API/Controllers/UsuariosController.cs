@@ -80,26 +80,29 @@ namespace Progress.Finance.API.Controllers
         }
 
         [HttpPut("EditarUsuario")]
-        public async Task<ActionResult> EditarUsuario([FromBody] Usuarios user)
+        public async Task<ActionResult> EditarUsuario([FromBody] AtualizaUsuairo user)
         {
             try
             {
                 var usuario = await _dc.usuarios.AsNoTracking().FirstOrDefaultAsync(u => u.IdUsuario == user.IdUsuario);
                 if (usuario == null) throw new InvalidOperationException("Id não encontrado");
 
-                var editarUser = new Usuarios
+                if (!string.IsNullOrEmpty(user.NovaSenha))
                 {
-                    Email = user.Email,
-                    IdUsuario = user.IdUsuario,
-                    Nome = user.Nome,
-                    Senha = user.Senha
-                };
+                    if (user.SenhaAtual != usuario.Senha)
+                    {
+                        return BadRequest("Senhas não conferem!");
+                    }
+                    usuario.Senha = user.NovaSenha;
+                }
 
-                _dc.usuarios.Update(editarUser);
+                usuario.Email = user.Email;
+                usuario.Nome = user.Nome;
+
+                _dc.usuarios.Update(usuario);
                 await _dc.SaveChangesAsync();
 
-                return Ok(editarUser);
-
+                return Ok(usuario);
             }
             catch (Exception ex)
             {
@@ -158,8 +161,12 @@ namespace Progress.Finance.API.Controllers
         [NonAction]
         public void DeleteImage(string imageName)
         {
-            var imagePath = Path.Combine(_hostEnvironment.ContentRootPath, @$"Resources/Images", imageName);
-            if (System.IO.File.Exists(imagePath)) System.IO.File.Delete(imagePath);
+            if (imageName != null)
+            {
+                var imagePath = Path.Combine(_hostEnvironment.ContentRootPath, @$"Resources/Images", imageName);
+                if (System.IO.File.Exists(imagePath)) System.IO.File.Delete(imagePath);
+            }
+
         }
 
         [HttpDelete("DeletarUsuario/{id}")]
