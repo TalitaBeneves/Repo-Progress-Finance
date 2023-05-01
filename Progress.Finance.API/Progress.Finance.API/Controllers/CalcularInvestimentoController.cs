@@ -113,7 +113,6 @@ namespace Progress.Finance.API.Controllers
                 }
             }
 
-            await _dc.SaveChangesAsync();
             return Ok(newListAtivos);
 
         }

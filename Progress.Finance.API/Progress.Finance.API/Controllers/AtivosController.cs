@@ -33,11 +33,16 @@ namespace Progress.Finance.API.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("CadastrarAtivo")]
         public async Task<ActionResult> CadastrarAtivo([FromBody] Ativos ativo)
         {
             if (ativo == null) return BadRequest("Ativo está null");
 
+            var verificaAtivo = await _dc.ativos.Where(i => i.Nome == ativo.Nome).FirstOrDefaultAsync();
+            
+            if (verificaAtivo != null)
+                return BadRequest("Esse ativo já esta cadastrado");
+            
 
             _dc.ativos.Add(ativo);
             await _dc.SaveChangesAsync();
@@ -45,7 +50,47 @@ namespace Progress.Finance.API.Controllers
             return Created("Ativo criado com sucesso!", ativo); ;
         }
 
+        [HttpPut("EditarAtivo")]
+        public async Task<ActionResult> EditarAtivo([FromBody] Ativos ativo)
+        {
+            if (ativo == null) return BadRequest("Ativo está null");
 
+            var request = await _dc.ativos.FirstOrDefaultAsync(i => i.IdAtivo == ativo.IdAtivo);
+           
+            if (request == null)
+                return BadRequest("Não foi encontrado nenhum ativo com esse id");
+
+            request.Nome = ativo.Nome;
+            request.LocalAlocado = ativo.LocalAlocado;
+            request.Nota = ativo.Nota;
+            request.QuantidadeDeAtivo = ativo.QuantidadeDeAtivo;
+            request.RecomendacaoPorcentagem = ativo.RecomendacaoPorcentagem;
+            request.SugestaoInvestimento = ativo.SugestaoInvestimento;
+            request.TipoAtivo = ativo.TipoAtivo;
+            request.ValorAtualDoAtivo = ativo.ValorAtualDoAtivo;
+            request.ValorTotalInvestido = ativo.ValorTotalInvestido;
+
+            _dc.ativos.Update(request);
+            await _dc.SaveChangesAsync();
+
+            return Ok(request);
+        }
+
+        [HttpDelete("Deletar/{idAtivo}")]
+        public async Task<ActionResult> ExcluirAtivo(int idAtivo)
+        {
+            if (idAtivo == null) return BadRequest("Ativo está null");
+
+            var delet = await _dc.ativos.FirstOrDefaultAsync(i => i.IdAtivo == idAtivo);
+
+            if (delet == null)
+                return BadRequest("Não foi encontrado nenhum ativo com esse id");
+
+            _dc.ativos.Remove(delet); ;
+            await _dc.SaveChangesAsync();
+
+            return Ok("Ativo deletado com sucesso!");
+        }
 
     }
 }
