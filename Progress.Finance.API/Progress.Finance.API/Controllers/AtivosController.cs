@@ -39,10 +39,10 @@ namespace Progress.Finance.API.Controllers
             if (ativo == null) return BadRequest("Ativo está null");
 
             var verificaAtivo = await _dc.ativos.Where(i => i.Nome == ativo.Nome).FirstOrDefaultAsync();
-            
+
             if (verificaAtivo != null)
                 return BadRequest("Esse ativo já esta cadastrado");
-            
+
 
             _dc.ativos.Add(ativo);
             await _dc.SaveChangesAsync();
@@ -56,7 +56,7 @@ namespace Progress.Finance.API.Controllers
             if (ativo == null) return BadRequest("Ativo está null");
 
             var request = await _dc.ativos.FirstOrDefaultAsync(i => i.IdAtivo == ativo.IdAtivo);
-           
+
             if (request == null)
                 return BadRequest("Não foi encontrado nenhum ativo com esse id");
 
@@ -82,14 +82,17 @@ namespace Progress.Finance.API.Controllers
             if (idAtivo == null) return BadRequest("Ativo está null");
 
             var delet = await _dc.ativos.FirstOrDefaultAsync(i => i.IdAtivo == idAtivo);
-
             if (delet == null)
                 return BadRequest("Não foi encontrado nenhum ativo com esse id");
+            else
+            {
+                _dc.ativos.Remove(delet); ;
+                await _dc.SaveChangesAsync();
 
-            _dc.ativos.Remove(delet); ;
-            await _dc.SaveChangesAsync();
+                return Ok();
+            }
 
-            return Ok("Ativo deletado com sucesso!");
+
         }
 
     }
