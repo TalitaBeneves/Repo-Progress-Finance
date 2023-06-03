@@ -21,22 +21,22 @@ namespace Progress.Finance.API.Controllers
             _dc = context;
         }
 
-        [HttpGet]
-        public async Task<ActionResult> CalcularInvestimento([FromQuery] int valorInvestimento, [FromQuery] int idUsuario)
+        [HttpGet] //500
+        public async Task<ActionResult> CalcularInvestimento([FromQuery] int valorInvestimento , [FromQuery] int idUsuario)
         {
             var listAtivos = await _dc.ativos.Where(id => id.IdUsuario == idUsuario).ToListAsync();
             var metaInvestimento = await _dc.metaInvestimento.Where(id => id.IdUsuario == idUsuario).FirstOrDefaultAsync();
 
             if (listAtivos == null) return BadRequest("Ativos não encontrados");
-            if (metaInvestimento == null) return BadRequest("Ativos não encontrados");
+            if (metaInvestimento == null) return BadRequest("Meta não encontrada");
 
-            var porcentagemAcoes = metaInvestimento.Acoes;
-            var porcentagemFIIs = metaInvestimento.Fiis;
-            var porcentagemRendaFixa = metaInvestimento.RendaFixa;
+            var porcentagemAcoes = metaInvestimento.Acoes; //20%
+            var porcentagemFIIs = metaInvestimento.Fiis; //20%
+            var porcentagemRendaFixa = metaInvestimento.RendaFixa; //60%
 
-            var valorTotalAcoes = valorInvestimento * porcentagemAcoes / 100;
-            var valorTotalFIIs = valorInvestimento * porcentagemFIIs / 100;
-            var valorTotalRendaFixa = valorInvestimento * porcentagemRendaFixa / 100;
+            var valorTotalAcoes = valorInvestimento * porcentagemAcoes / 100; //100
+            var valorTotalFIIs = valorInvestimento * porcentagemFIIs / 100; //100
+            var valorTotalRendaFixa = valorInvestimento * porcentagemRendaFixa / 100;//00
 
             var valorTotalRecomendado = valorTotalAcoes + valorTotalFIIs + valorTotalRendaFixa;
             var totalPontos = listAtivos.Sum(item => item.Nota);
