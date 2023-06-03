@@ -186,7 +186,81 @@ namespace Progress.Finance.API.Controllers
             }
             catch (Exception ex)
             {
+                return BadRequest($"Erro ao deletar usuário: {ex.Message}");
+            }
+        }
+
+
+        [HttpGet("buscarPerguntas/{idUsuario}")]
+        public async Task<ActionResult> buscarPerguntasIdUsuario(int idUsuario)
+        {
+
+            if (idUsuario == null) return BadRequest($"IdUsuario não pode ser null");
+
+            var usuario = await _dc.perguntas.FirstOrDefaultAsync(u => u.IdUsuario == u.IdUsuario);
+
+            
+
+            return Ok(usuario);
+
+        }
+
+        [HttpPost("cadastrarPergunta")]
+        public async Task<ActionResult> CadastrarPergunta([FromBody] Perguntas p)
+        {
+            try
+            {
+                _dc.perguntas.Add(p);
+                await _dc.SaveChangesAsync();
+
+                return Ok("Pergunta criada com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao cadastrar pergunta: {ex.Message}");
+            }
+        }
+
+        [HttpPut("EditarPergunta")]
+        public async Task<ActionResult> EditarPergunta([FromBody] Perguntas p)
+        {
+            try
+            {
+                var pergunta = await _dc.perguntas.AsNoTracking().FirstOrDefaultAsync(u => u.Id == p.Id);
+                if (pergunta == null) throw new InvalidOperationException("Id não encontrado");
+
+                pergunta.Marked = p.Marked;
+                pergunta.Tipo = p.Tipo;
+                pergunta.Pergunta = p.Pergunta;
+
+
+                _dc.perguntas.Update(p);
+                await _dc.SaveChangesAsync();
+
+                return Ok(p);
+            }
+            catch (Exception ex)
+            {
                 return BadRequest($"Erro ao atualizar usuário: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("DeletarPergunta/{id}")]
+        public async Task<ActionResult> DeletarPergunta(int id)
+        {
+            try
+            {
+                var pergunta = await _dc.perguntas.FindAsync(id);
+
+                _dc.perguntas.Remove(pergunta);
+                await _dc.SaveChangesAsync();
+
+                return Ok("Pergunta deletada com sucesso");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro ao deletar pergunta: {ex.Message}");
             }
         }
 

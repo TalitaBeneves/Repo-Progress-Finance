@@ -12,4 +12,10 @@
         FUNDOS_IMOBILIARIOS = 1,
         RENDA_FIXA = 2
     }
+
+    public enum TipoAtivoParaPergunta
+    {
+        Acoes = 1,
+        FIIs = 2
+    }
 }

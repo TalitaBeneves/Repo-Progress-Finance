@@ -9,6 +9,7 @@ namespace API.Data
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         public DbSet<Usuarios> usuarios { get; set; }
+        public DbSet<Perguntas> perguntas { get; set; }
         public DbSet<UsuarioAtivos> usuarioAtivos { get; set; }
         public DbSet<UsuarioMetaInvestimento> usuarioMetaInvestimento { get; set; }
         public DbSet<Ativos> ativos { get; set; }
